@@ -1,0 +1,159 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Real-Time Table</title> 
+    <style> 
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+        } 
+        h1 { 
+            text-align: center; 
+            margin-bottom: 20px; 
+        } 
+        table { 
+            width: 80%; 
+            margin: 0 auto; 
+            border-collapse: collapse; 
+            border: 2px solid #ddd; 
+        } 
+        th, td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #ddd; 
+        } 
+        th { 
+            background-color: #f2f2f2; 
+        } 
+        tr:hover { 
+            background-color: #f5f5f5; 
+        } 
+        tr:nth-child(even) { 
+            background-color: #f2f2f2; 
+        } 
+        input[type="text"] { 
+            padding: 6px 8px 6px 10px; 
+            margin-right: 10px; 
+            border: 1px solid #ccc; 
+        } 
+        button { 
+            padding: 8px 16px; 
+            background-color: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+        } 
+        button:hover { 
+            background-color: #45a049; 
+        } 
+    </style> 
+</head> 
+<body> 
+    <h1>ИНФОРМАЦИЯ ДЛЯ СОТРУДНИКОВ</h1> 
+    <form id="dataForm" action="{{ url_for('submit') }}" method="post"> 
+        <input type="text" id="number" placeholder="Номер"> 
+        <input type="text" id="surname" placeholder="Фамилия"> 
+        <input type="text" id="name" placeholder="Имя"> 
+        <select id = "status" name="status"> 
+            <option value="" disable selected> Статус готовности</option> 
+            <option value="Ждем">Ждем</option> 
+            <option value="Делаем">Делаем</option> 
+            <option value="Готово">Готово</option> 
+        </select> 
+        <button type="submit" onclick="addRow()">Добавить</button> 
+        <button id="save-button">Сохранить JSON</button> 
+    </form> 
+    <table id="dataTable"> 
+        <thead> 
+            <tr> 
+                <th>Номер</th> 
+                <th>Фамилия</th> 
+                <th>Имя</th> 
+                <th>Статус готовности</th> 
+            </tr> 
+        </thead> 
+        <tbody id="app"> 
+            {% for item in data %} 
+            <tr> 
+                <td>{{ item.number }}</td> 
+                <td>{{ item.surname }}</td> 
+                <td>{{ item.name }}</td> 
+                <td>{{ item.status }}</td> 
+            </tr> 
+            {% endfor %} 
+        </tbody> 
+    </table> 
+    <script> 
+         
+        document.getElementById('save-button').addEventListener('click', function(){ 
+            var html = document.documentElement.outerHTML; 
+            var blob = new Blob([html], {type: 'text/html'}); 
+ 
+            var formData = new FormData(); 
+            formData.append('html_file', blob, 'my_page.html'); 
+ 
+ 
+            fetch('/process_data', { 
+                method: 'POST', 
+                body: formData 
+                // headers: { 
+                //     'Content-Type': 'text/html' 
+                // }, 
+                // body: html  
+            }).then(function(response){ 
+                return response.text(); 
+            }).then(function(text){ 
+                console.log(text); 
+            }); 
+ 
+            // var blob = new Blob([html], {type: 'text/html'}); 
+            // var url = URL.createObjectURL(blob); 
+            // var a = document.createElement('a'); 
+            // a.href = url; 
+            // a.download =  'my_page.html' 
+            // a.click(); 
+        }); 
+ 
+        document.getElementById("dataForm").addEventListener("submit", function(event) { 
+            event.preventDefault(); 
+            //addRow(); 
+        }); 
+ 
+        function addRow() { 
+            var number = document.getElementById("number").value; 
+            var surname = document.getElementById("surname").value;
+
+	    var name = document.getElementById("name").value; 
+            var status = document.getElementById("status").value; 
+             
+ 
+            var newRow = "<tr>"; 
+            newRow += "<td>" + number + "</td>"; 
+            newRow += "<td>" + surname + "</td>"; 
+            newRow += "<td>" + name + "</td>"; 
+            newRow += "<td>"; 
+            newRow += "<select class='status-select' onchange='updateStatus(this)'>"; 
+            newRow += "<option value='' disable selected> Статус готовности</option>"; 
+            newRow += "<option value='Ждем'>Ждем</option>"; 
+            newRow += "<option value='Делаем'>Делаем</option>"; 
+            newRow += "<option value='Готово'>Готово</option>"; 
+            newRow += "</tr>"; 
+ 
+                     
+            document.getElementById("app").innerHTML += newRow; 
+             
+             
+        } 
+        function updateStatus(selectElement){ 
+            var selectedStatus = selectElement.value; 
+            var row = selectElement.closest("tr"); 
+ 
+        } 
+ 
+    </script> 
+</body> 
+</html>
